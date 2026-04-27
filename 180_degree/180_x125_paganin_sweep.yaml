@@ -98,3 +98,4 @@
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
     gpu_id: 0                                 # GPU device index (0 = first available GPU)
+  save_result: false                          # set true to also save a float32 HDF5 of this output to the run directory
