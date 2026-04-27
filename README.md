@@ -104,6 +104,44 @@ Full path template:
 
 ---
 
+## Recording Experiments with Git Branches
+
+The `master` branch holds clean templates with `# CHANGE_HERE` placeholders and is never modified.
+For each experiment, create a dedicated branch, fill in the actual values, and push it — giving you
+a permanent, searchable record of every reconstruction you ran.
+
+```bash
+# Start from the clean master
+git checkout master
+git pull
+
+# Create a branch for this experiment (use a descriptive name)
+git checkout -b visit/cm44160-2-tomo-001
+
+# Edit the pipeline(s) you are using — fill in all CHANGE_HERE values
+# e.g. set metadata_path, distance, energy, center ...
+
+# Commit the filled-in version with a short description
+git add 180_degree/180_x4_absorption_auto_COR.yaml
+git commit -m "cm44160-2 tomo-001: 4x absorption, energy 27 keV, dist 0.12 m"
+
+# Push the branch — master is left untouched
+git push -u origin visit/cm44160-2-tomo-001
+```
+
+On GitHub you can then browse any past experiment branch to see exactly which parameters were used,
+and compare branches to spot differences between runs. Suggested branch naming:
+
+```
+visit/<visit-code>-<short-description>
+# e.g.
+visit/cm44160-2-bone-4x
+visit/cm44160-2-mouse-360-paganin
+visit/cm44160-3-calibration
+```
+
+---
+
 ## Running HTTomo
 
 ```bash
