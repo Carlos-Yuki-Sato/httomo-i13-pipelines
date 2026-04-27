@@ -10,8 +10,16 @@ Covers all standard experimental configurations used at I13-2.
 ```
 pipelines/
 ├── radiography/          4 files  — save projections without reconstruction
-├── 180_degree/          28 files  — standard 180° tomography
-└── 360_degree/          28 files  — extended-FOV 360° tomography
+├── 180_degree/           — standard 180° tomography
+│   ├── x1_25/   7 files
+│   ├── x2/      7 files
+│   ├── x4/      7 files
+│   └── x10/     7 files
+└── 360_degree/           — extended-FOV 360° tomography
+    ├── x1_25/   7 files
+    ├── x2/      7 files
+    ├── x4/      7 files
+    └── x10/     7 files
 ```
 
 ---
