@@ -142,14 +142,16 @@ visit/cm44160-3-calibration
 
 ---
 
-## Running HTTomo
+## HTTomo
+
+check the documentiona at: https://diamondlightsource.github.io/httomo/
+
+and start with if you on a Diamond machine:
 
 ```bash
 module load httomo
-httomo run <nexus_file.nxs> <pipeline.yaml> <output_dir>
+httomo --help
 ```
-
-Output reconstructions appear under `<output_dir>/images/`.
 
 ---
 
@@ -158,13 +160,5 @@ Output reconstructions appear under `<output_dir>/images/`.
 - **Paganin pipelines** do **not** include `minus_log` — the Paganin filter handles the logarithm internally.
 - **Sweep pipelines** (COR sweep and Paganin sweep) produce one output slice per sweep value; they do **not** include `calculate_stats`, `rescale_to_int`, or `save_to_images`.
 - **Radiography pipelines** use `axis: 0` in `save_to_images` to save projections, not sinograms.
-- All full-reconstruction pipelines save **16-bit uint16 TIFF** images (percentile-clipped).
+- Typically all full-reconstruction pipelines save **16-bit uint16 TIFF** images (percentile-clipped).
 
----
-
-## Beamline Reference
-
-- Beamline: Diamond Light Source I13-2 (coherence branch)
-- Camera: pco.Edge 4.2, native pixel 3.25 µm
-- Source distance: ~910 mm (sample to detector reference)
-- Reconstruction: HTTomo + TomoPy / ToMoBAR (FBP3d_tomobar)
