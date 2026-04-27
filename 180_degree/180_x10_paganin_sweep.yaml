@@ -1,0 +1,75 @@
+# HTTomo pipeline — I13-2
+# Scan: 180°  |  Objective: 10x  |  Phase: Paganin sweep  |  COR: manual fixed
+# Pipeline: T5 — thin-slice Paganin ratio_delta_beta sweep to find optimal phase retrieval
+# Usage: run this after finding COR; then use 180_x10_paganin_fixed_COR.yaml for full reconstruction
+# Before running: set center (from COR sweep), distance, energy, update distortion path
+
+# --- Standard tomography loader — thin slice for fast sweep. ---
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: 1000  # CHANGE_HERE: set to a row through the middle of your sample
+        stop: 1010   # ~10 rows is sufficient for a Paganin sweep
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+# --- Removing unresponsive/dead pixels in the data, aka zingers. ---
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+# --- Flat-field and dark-field projection correction. ---
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
+    lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
+
+# --- Applying optical distortion correction to projections. ---
+- method: distortion_correction_proj_discorpy
+  module_path: httomolibgpu.prep.alignment
+  parameters:
+    metadata_path: /dls/i13/data/YEAR/VISIT/processing/distortion_corrections/results_4thOrder/Pos5_10x/coefficients_bwfw.txt  # CHANGE_HERE: update path for current visit
+    shift_xy: [0, 0]                          # distortion centre offset [x, y] in pixels from image corner
+    step_xy: [1, 1]                           # sampling step in x and y directions (must be ≤ 1)
+    order: 3                                  # spline interpolation order: 0=nearest, 1=linear, 3=cubic (default), max 5
+    mode: constant                            # boundary padding: 'constant' (zeros), 'nearest', 'mirror', 'reflect', or 'wrap'
+
+# --- Paganin phase retrieval with ratio_delta_beta sweep. Inspect to find best value. ---
+# Note: pixel_size = 3.25 µm detector pixel / 10x magnification = 0.325 µm
+- method: paganin_filter
+  module_path: httomolibgpu.prep.phase
+  parameters:
+    pixel_size: 0.325   # µm — effective pixel size at sample (3.25 µm detector / 10x)
+    distance: 0.020     # CHANGE_HERE: sample-to-detector distance in metres = (detector_position_mm - 910) / 1000
+    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
+    pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
+    ratio_delta_beta: !SweepRange
+      start: 0
+      stop: 10
+      step: 0.25  # CHANGE_HERE: at 10x the optimal value is typically much lower than at 4x
+
+# --- Reconstruction method — uses a fixed COR since auto-finding may struggle on thin slices. ---
+- method: FBP3d_tomobar
+  module_path: httomolibgpu.recon.algorithm
+  parameters:
+    center: 1280  # CHANGE_HERE: set to COR found from 180_x10_absorption_COR_sweep.yaml
+    detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
+    filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
+    recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
+    recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
+    gpu_id: 0                                 # GPU device index (0 = first available GPU)

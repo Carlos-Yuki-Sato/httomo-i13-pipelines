@@ -1,0 +1,80 @@
+# HTTomo pipeline — I13-2
+# Scan: 360°  |  Objective: 1.25x  |  Phase: Paganin sweep  |  COR: fixed (hardcoded)
+# Pipeline: T14 — thin-slice Paganin ratio_delta_beta sweep with known overlap and COR
+# Before running: set overlap, side, center, distance, energy; update distortion_correction metadata_path
+
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: 1278  # CHANGE_HERE: ~4 rows near mid-detector; keep ≤7 rows for SweepRange
+        stop: 1282   # CHANGE_HERE
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
+    lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
+
+- method: distortion_correction_proj_discorpy
+  module_path: httomolibgpu.prep.alignment
+  parameters:
+    metadata_path: /dls/i13/data/YEAR/VISIT/processing/distortion_corrections/results_4thOrder/Pos1_125x/coefficients_bwfw.txt  # CHANGE_HERE
+    shift_xy: [0, 0]                          # distortion centre offset [x, y] in pixels from image corner
+    step_xy: [1, 1]                           # sampling step in x and y directions (must be ≤ 1)
+    order: 3                                  # spline interpolation order: 0=nearest, 1=linear, 3=cubic (default), max 5
+    mode: constant                            # boundary padding: 'constant' (zeros), 'nearest', 'mirror', 'reflect', or 'wrap'
+
+- method: sino_360_to_180
+  module_path: httomolibgpu.misc.morph
+  parameters:
+    overlap: 500  # CHANGE_HERE: set to overlap found from find_center_360 or 360_x125_absorption_auto_COR.yaml
+    side: right   # CHANGE_HERE: 'left' or 'right'
+
+- method: remove_stripe_based_sorting
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    size: 11                                  # median filter window size for stripe removal (null = auto-estimate from data)
+    dim: 1                                    # filter orientation: 1 = vertical stripes (typical), 2 = diagonal
+
+# Note: pixel_size = 3.25 µm / 1.25x = 2.6 µm. No minus_log — Paganin handles it.
+- method: paganin_filter
+  module_path: httomolibgpu.prep.phase
+  parameters:
+    pixel_size: 2.6     # µm
+    distance: 0.100     # CHANGE_HERE: (detector_position_mm - 910) / 1000
+    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
+    pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
+    ratio_delta_beta: !SweepRange
+      start: 1
+      stop: 1000
+      step: 10
+
+- method: FBP3d_tomobar
+  module_path: httomolibgpu.recon.algorithm
+  parameters:
+    center: 2310  # CHANGE_HERE: COR after 360→180 ≈ (2×detector_width − overlap) / 2
+    detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
+    filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
+    recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
+    recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
+    gpu_id: 0                                 # GPU device index (0 = first available GPU)

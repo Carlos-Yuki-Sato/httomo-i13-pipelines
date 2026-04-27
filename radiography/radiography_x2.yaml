@@ -1,0 +1,71 @@
+# HTTomo pipeline — I13-2
+# Scan: Radiography  |  Objective: 2x
+# Pipeline: T1 — save normalised projections (no reconstruction)
+# Before running: update distortion_correction metadata_path for current visit
+
+# --- Standard tomography loader for NeXus files. ---
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: null
+        stop: null
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+# --- Removing unresponsive/dead pixels in the data, aka zingers. ---
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+# --- Flat-field and dark-field projection correction. ---
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
+    lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
+
+# --- Applying optical distortion correction to projections. ---
+- method: distortion_correction_proj_discorpy
+  module_path: httomolibgpu.prep.alignment
+  parameters:
+    metadata_path: /dls/i13/data/YEAR/VISIT/processing/distortion_corrections/results_4thOrder/Pos2_2x/coefficients_bwfw.txt  # CHANGE_HERE: update path for current visit
+    shift_xy: [0, 0]                          # distortion centre offset [x, y] in pixels from image corner
+    step_xy: [1, 1]                           # sampling step in x and y directions (must be ≤ 1)
+    order: 3                                  # spline interpolation order: 0=nearest, 1=linear, 3=cubic (default), max 5
+    mode: constant                            # boundary padding: 'constant' (zeros), 'nearest', 'mirror', 'reflect', or 'wrap'
+
+# --- Method to remove stripe artefacts. ---
+- method: remove_stripe_based_sorting
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    size: 11                                  # median filter window size for stripe removal (null = auto-estimate from data)
+    dim: 1                                    # filter orientation: 1 = vertical stripes (typical), 2 = diagonal
+
+# --- Negative log to convert raw intensity to line integrals of attenuation. ---
+- method: minus_log
+  module_path: httomolibgpu.prep.normalize
+  parameters: {}
+
+# --- Saving projections as images. axis: 0 = projections (NOT sinograms). ---
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: radiograph                # output subdirectory name inside the HTTomo run folder
+    axis: 0                                   # slicing axis: 0=projections, 1=sinograms, 2=recon slices, 'auto'=HTTomo decides
+    file_format: tif                          # image format: 'tif' (lossless), 'png' (lossless), or 'jpeg' (lossy)
+    jpeg_quality: 95                          # JPEG compression quality 1–100 (only applies when file_format='jpeg')
+    offset: 0                                 # starting index for output file names (useful for parallel chunked runs)
+    asynchronous: true                        # write images in background while GPU processes the next chunk

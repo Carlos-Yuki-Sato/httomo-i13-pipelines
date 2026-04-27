@@ -1,0 +1,15 @@
+# Ignore OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore editor temp files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Ignore HTTomo run output directories (auto-generated next to YAML files)
+httomo_*/
+run_*/
