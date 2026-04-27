@@ -146,7 +146,7 @@ visit/cm44160-3-calibration
 
 check the documentiona at: https://diamondlightsource.github.io/httomo/
 
-and start with if you on a Diamond machine:
+and, if you are already on a Diamond machine, start with this :
 
 ```bash
 module load httomo
