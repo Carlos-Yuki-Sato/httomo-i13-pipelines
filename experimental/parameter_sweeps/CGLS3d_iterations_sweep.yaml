@@ -1,14 +1,16 @@
 # HTTomo pipeline — I13-2  |  recon_comparison
-# Algorithm : SIRT3d_tomobar  (Simultaneous Iterative Reconstruction Technique, GPU 3D)
-# Sweep     : iterations  50 → 300  step 50  (6 reconstructions)
+# Algorithm : CGLS3d_tomobar  (Conjugate Gradient Least Squares, GPU 3D)
+# Sweep     : iterations  5 → 30  step 5  (6 reconstructions)
 #
-# SIRT is a semi-convergent iterative method: quality improves up to an
-# optimal iteration count, then noise begins to grow.  Typical optimum:
-#   Dense, well-sampled data   →  100–200 iterations
-#   Sparse / noisy data        →  50–100 iterations
+# CGLS converges much faster than SIRT: optimal quality is typically reached
+# in 10–20 iterations rather than 100–300.  Semi-convergent like SIRT.
 #
-# SIRT produces smoother results than FBP but can over-smooth fine features.
-# For noise-suppressed results with preserved edges, prefer FISTA3d or ADMM3d.
+#   5–10 iterations   →  early-stopped, moderate noise suppression
+#   10–20 iterations  →  typical optimum range
+#   > 25 iterations   →  usually diverging into noise (data-dependent)
+#
+# CGLS tends to produce crisper edges than SIRT at low iteration counts.
+# If regularisation is needed, prefer FISTA3d or ADMM3d instead.
 #
 # Auto COR via find_center_vo. Set cor_initialisation_value to your known COR.
 # Restrict detector_y start/stop to 10 central slices before running.
@@ -69,8 +71,7 @@
 
 # ── RECONSTRUCTION SWEEP ──────────────────────────────────────────────────────
 # Swept parameter : iterations
-# Note: computation time scales linearly with iteration count.
-- method: SIRT3d_tomobar
+- method: CGLS3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: ${{centering.side_outputs.centre_of_rotation}}
@@ -78,10 +79,10 @@
     recon_size: null
     recon_mask_radius: 0.95
     iterations: !SweepRange
-      start: 50
-      stop: 300
-      step: 50
-    nonnegativity: true
+      start: 5
+      stop: 30
+      step: 5
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats
@@ -102,7 +103,7 @@
 - method: save_to_images
   module_path: httomolib.misc.images
   parameters:
-    subfolder_name: SIRT3d
+    subfolder_name: CGLS3d
     axis: auto
     file_format: tif
     asynchronous: true

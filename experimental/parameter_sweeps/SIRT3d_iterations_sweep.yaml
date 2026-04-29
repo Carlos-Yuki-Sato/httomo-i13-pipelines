@@ -1,16 +1,14 @@
 # HTTomo pipeline — I13-2  |  recon_comparison
-# Algorithm : FISTA3d_tomobar  (Fast Iterative Shrinkage-Thresholding, GPU 3D)
-# Sweep     : regularisation_parameter (lambda)  log-spaced  (6 reconstructions)
+# Algorithm : SIRT3d_tomobar  (Simultaneous Iterative Reconstruction Technique, GPU 3D)
+# Sweep     : iterations  50 → 300  step 50  (6 reconstructions)
 #
-# FISTA with TV regularisation is the recommended method for noisy or low-dose
-# data where FBP gives unacceptable streak/noise artefacts.
+# SIRT is a semi-convergent iterative method: quality improves up to an
+# optimal iteration count, then noise begins to grow.  Typical optimum:
+#   Dense, well-sampled data   →  100–200 iterations
+#   Sparse / noisy data        →  50–100 iterations
 #
-# regularisation_parameter (lambda) — the most critical parameter:
-#   Very small (< 0.001)  →  under-regularised, similar to FBP
-#   Optimal (0.001–0.01)  →  noise suppressed, edges preserved
-#   Large   (> 0.02)      →  over-smoothed, cartoon-like, fine detail lost
-#
-# Log-spaced sweep covers the useful range more evenly than a linear step.
+# SIRT produces smoother results than FBP but can over-smooth fine features.
+# For noise-suppressed results with preserved edges, prefer FISTA3d or ADMM3d.
 #
 # Auto COR via find_center_vo. Set cor_initialisation_value to your known COR.
 # Restrict detector_y start/stop to 10 central slices before running.
@@ -70,22 +68,20 @@
   parameters: {}
 
 # ── RECONSTRUCTION SWEEP ──────────────────────────────────────────────────────
-# Swept parameter : regularisation_parameter (lambda)  — log-spaced values
-- method: FISTA3d_tomobar
+# Swept parameter : iterations
+# Note: computation time scales linearly with iteration count.
+- method: SIRT3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: ${{centering.side_outputs.centre_of_rotation}}
     detector_pad: false
     recon_size: null
     recon_mask_radius: 0.95
-    iterations: 20
-    subsets_number: 6
-    data_fidelity: LS
-    regularisation_type: PD_TV
-    regularisation_parameter: !Sweep [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-    regularisation_iterations: 50
-    regularisation_half_precision: true
-    nonnegativity: true
+    iterations: !SweepRange
+      start: 50
+      stop: 300
+      step: 50
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats
@@ -106,7 +102,7 @@
 - method: save_to_images
   module_path: httomolib.misc.images
   parameters:
-    subfolder_name: FISTA3d
+    subfolder_name: SIRT3d
     axis: auto
     file_format: tif
     asynchronous: true

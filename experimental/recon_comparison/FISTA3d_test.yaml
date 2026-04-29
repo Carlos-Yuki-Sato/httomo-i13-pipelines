@@ -73,7 +73,7 @@
     regularisation_parameter: 0.001
     regularisation_iterations: 50
     regularisation_half_precision: true
-    nonnegativity: true
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats

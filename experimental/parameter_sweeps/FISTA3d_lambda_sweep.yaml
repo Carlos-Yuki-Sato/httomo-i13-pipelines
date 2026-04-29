@@ -1,14 +1,16 @@
 # HTTomo pipeline — I13-2  |  recon_comparison
 # Algorithm : FISTA3d_tomobar  (Fast Iterative Shrinkage-Thresholding, GPU 3D)
-# Sweep     : regularisation_type  ROF_TV vs PD_TV  (2 reconstructions)
+# Sweep     : regularisation_parameter (lambda)  log-spaced  (6 reconstructions)
 #
-# Run FISTA3d_lambda_sweep.yaml first to find an optimal lambda, then use
-# this file to compare the two TV regularisation types at that lambda.
+# FISTA with TV regularisation is the recommended method for noisy or low-dose
+# data where FBP gives unacceptable streak/noise artefacts.
 #
-#   PD_TV  (Primal-Dual Total Variation, default) — generally more stable
-#   ROF_TV (Rudin-Osher-Fatemi Total Variation)   — may give sharper edges
+# regularisation_parameter (lambda) — the most critical parameter:
+#   Very small (< 0.001)  →  under-regularised, similar to FBP
+#   Optimal (0.001–0.01)  →  noise suppressed, edges preserved
+#   Large   (> 0.02)      →  over-smoothed, cartoon-like, fine detail lost
 #
-# Fixed lambda: 0.001 — update after running FISTA3d_lambda_sweep.yaml.
+# Log-spaced sweep covers the useful range more evenly than a linear step.
 #
 # Auto COR via find_center_vo. Set cor_initialisation_value to your known COR.
 # Restrict detector_y start/stop to 10 central slices before running.
@@ -68,7 +70,7 @@
   parameters: {}
 
 # ── RECONSTRUCTION SWEEP ──────────────────────────────────────────────────────
-# Swept parameter : regularisation_type
+# Swept parameter : regularisation_parameter (lambda)  — log-spaced values
 - method: FISTA3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
@@ -79,11 +81,11 @@
     iterations: 20
     subsets_number: 6
     data_fidelity: LS
-    regularisation_type: !Sweep ["ROF_TV", "PD_TV"]
-    regularisation_parameter: 0.001               # CHANGE_HERE: use optimal lambda from lambda_sweep
+    regularisation_type: PD_TV
+    regularisation_parameter: !Sweep [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
     regularisation_iterations: 50
     regularisation_half_precision: true
-    nonnegativity: true
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats
@@ -104,7 +106,7 @@
 - method: save_to_images
   module_path: httomolib.misc.images
   parameters:
-    subfolder_name: FISTA3d_reg_type
+    subfolder_name: FISTA3d
     axis: auto
     file_format: tif
     asynchronous: true

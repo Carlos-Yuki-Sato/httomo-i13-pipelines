@@ -1,16 +1,14 @@
 # HTTomo pipeline — I13-2  |  recon_comparison
-# Algorithm : CGLS3d_tomobar  (Conjugate Gradient Least Squares, GPU 3D)
-# Sweep     : iterations  5 → 30  step 5  (6 reconstructions)
+# Algorithm : FISTA3d_tomobar  (Fast Iterative Shrinkage-Thresholding, GPU 3D)
+# Sweep     : regularisation_type  ROF_TV vs PD_TV  (2 reconstructions)
 #
-# CGLS converges much faster than SIRT: optimal quality is typically reached
-# in 10–20 iterations rather than 100–300.  Semi-convergent like SIRT.
+# Run FISTA3d_lambda_sweep.yaml first to find an optimal lambda, then use
+# this file to compare the two TV regularisation types at that lambda.
 #
-#   5–10 iterations   →  early-stopped, moderate noise suppression
-#   10–20 iterations  →  typical optimum range
-#   > 25 iterations   →  usually diverging into noise (data-dependent)
+#   PD_TV  (Primal-Dual Total Variation, default) — generally more stable
+#   ROF_TV (Rudin-Osher-Fatemi Total Variation)   — may give sharper edges
 #
-# CGLS tends to produce crisper edges than SIRT at low iteration counts.
-# If regularisation is needed, prefer FISTA3d or ADMM3d instead.
+# Fixed lambda: 0.001 — update after running FISTA3d_lambda_sweep.yaml.
 #
 # Auto COR via find_center_vo. Set cor_initialisation_value to your known COR.
 # Restrict detector_y start/stop to 10 central slices before running.
@@ -70,19 +68,22 @@
   parameters: {}
 
 # ── RECONSTRUCTION SWEEP ──────────────────────────────────────────────────────
-# Swept parameter : iterations
-- method: CGLS3d_tomobar
+# Swept parameter : regularisation_type
+- method: FISTA3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: ${{centering.side_outputs.centre_of_rotation}}
     detector_pad: false
     recon_size: null
     recon_mask_radius: 0.95
-    iterations: !SweepRange
-      start: 5
-      stop: 30
-      step: 5
-    nonnegativity: true
+    iterations: 20
+    subsets_number: 6
+    data_fidelity: LS
+    regularisation_type: !Sweep ["ROF_TV", "PD_TV"]
+    regularisation_parameter: 0.001               # CHANGE_HERE: use optimal lambda from lambda_sweep
+    regularisation_iterations: 50
+    regularisation_half_precision: true
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats
@@ -103,7 +104,7 @@
 - method: save_to_images
   module_path: httomolib.misc.images
   parameters:
-    subfolder_name: CGLS3d
+    subfolder_name: FISTA3d_reg_type
     axis: auto
     file_format: tif
     asynchronous: true

@@ -37,7 +37,7 @@
   module_path: httomolibgpu.recon.rotation
   parameters:
     ind: mid
-    average_radius: 3
+    average_radius: 1
     cor_initialisation_value: 1290  # CHANGE_HERE: approximate COR if known
     smin: -300
     smax: 300
@@ -67,7 +67,7 @@
     recon_size: null
     recon_mask_radius: 0.95
     iterations: 100
-    nonnegativity: true
+    nonnegativity: false
   save_result: false
 
 - method: calculate_stats
@@ -82,7 +82,7 @@
   parameters:
     perc_range_min: 1.0
     perc_range_max: 99.0
-    bits: 16
+    bits: 8
     glob_stats: ${{statistics.side_outputs.glob_stats}}
 
 - method: save_to_images
@@ -90,5 +90,5 @@
   parameters:
     subfolder_name: SIRT3d_test
     axis: auto
-    file_format: tif
+    file_format: png
     asynchronous: true
