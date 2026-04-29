@@ -1,0 +1,115 @@
+# HTTomo pipeline — I13-2 | TEST / DEVELOPMENT
+# Scan: 180°  |  Objective: 10x  |  Phase: absorption  |  COR: auto
+# Test: raven_filter added after remove_stripe_based_sorting (default uvalue=20)
+# Central slice only (~5 rows). No distortion correction.
+
+# --- Standard tomography loader for NeXus files. ---
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: 1278                           # CHANGE_HERE: ~5 rows centred on mid-detector
+        stop: 1283                            # CHANGE_HERE
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+# --- Removing unresponsive/dead pixels in the data, aka zingers. ---
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+# --- Flat-field and dark-field projection correction. ---
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    cutoff: 10.0                              # clip normalised values above this threshold to suppress hot pixels
+
+# --- Center of Rotation auto-finding. ---
+# Note: wider search range (±300) and row averaging (3) suited to 10x objective.
+- method: find_center_vo
+  module_path: httomolibgpu.recon.rotation
+  parameters:
+    ind: mid                                  # sinogram row index for COR search; null or 'mid' = mid-detector row
+    average_radius: 3                         # number of neighbouring rows to average for better SNR
+    cor_initialisation_value: 1280            # CHANGE_HERE: approximate COR in pixels if known
+    smin: -300                                # coarse search: lower pixel offset from the initial COR estimate
+    smax: 300                                 # coarse search: upper pixel offset from the initial COR estimate
+    srad: 6.0                                 # fine search radius in pixels around the coarse result
+    step: 0.5                                 # fine search step size in pixels
+    ratio: 0.5                                # FOV-to-object width ratio for Fourier ring-suppression mask
+    drop: 20                                  # central Fourier lines to exclude from the search
+  id: centering
+  side_outputs:
+    cor: centre_of_rotation
+
+# --- Standard stripe removal (sorting method). ---
+- method: remove_stripe_based_sorting
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    size: 11                                  # median filter window size for stripe removal
+    dim: 1                                    # 1 = vertical stripes (typical), 2 = diagonal
+
+# --- Raven FFT filter for ring/stripe suppression (applied after sorting method). ---
+- method: raven_filter
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    pad_y: 20                                 # top/bottom padding in pixels before FFT
+    pad_x: 20                                 # left/right padding in pixels before FFT
+    pad_method: edge                          # numpy padding mode: 'edge', 'reflect', or 'constant'
+    uvalue: 20                                # cut-off frequency: 10=strong suppression, 20=moderate, 50=weak
+    nvalue: 4                                 # filter profile steepness (higher = sharper cut-off)
+    vvalue: 2                                 # number of image rows around zero-frequency receiving the filter
+
+# --- Negative log to convert raw intensity to line integrals of attenuation. ---
+- method: minus_log
+  module_path: httomolibgpu.prep.normalize
+  parameters: {}
+
+# --- Reconstruction method. ---
+- method: FBP3d_tomobar
+  module_path: httomolibgpu.recon.algorithm
+  parameters:
+    center: ${{centering.side_outputs.centre_of_rotation}}
+    detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
+    filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother, higher = sharper)
+    recon_size: null                          # output slice size in pixels (null = detector width)
+    recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice
+  save_result: false                          # set true to also save a float32 HDF5 of this output to the run directory
+
+# --- Calculate global statistics on the reconstructed volume. ---
+- method: calculate_stats
+  module_path: httomo.methods
+  parameters: {}
+  id: statistics
+  side_outputs:
+    glob_stats: glob_stats
+
+# --- Rescaling the data to 16-bit. ---
+- method: rescale_to_int
+  module_path: httomolib.misc.rescale
+  parameters:
+    perc_range_min: 1.0                       # lower percentile clip — values below this map to 0
+    perc_range_max: 99.0                      # upper percentile clip — values above this map to integer max
+    bits: 16                                  # output bit depth: 8, 16, or 32
+    glob_stats: ${{statistics.side_outputs.glob_stats}}
+
+# --- Saving reconstruction as images. ---
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: raven_standard            # output subdirectory name inside the HTTomo run folder
+    axis: auto                                # slicing axis: 'auto' = HTTomo decides
+    file_format: tif                          # image format: 'tif' (lossless)
+    asynchronous: true                        # write images in background while GPU processes next chunk
