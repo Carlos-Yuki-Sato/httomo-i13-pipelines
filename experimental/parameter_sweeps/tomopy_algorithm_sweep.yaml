@@ -52,7 +52,7 @@
   module_path: httomolibgpu.recon.rotation
   parameters:
     ind: mid
-    average_radius: 3
+    average_radius: 1
     cor_initialisation_value: 1290  # CHANGE_HERE: approximate COR if known
     smin: -300
     smax: 300
