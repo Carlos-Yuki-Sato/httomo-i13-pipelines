@@ -25,8 +25,8 @@
     preview:
       detector_x: {start: null, stop: null}
       detector_y:
-        start: 1078  # mid-detector − 2  (2160 / 2 − 2)
-        stop:  1083  # mid-detector + 3  (5 rows total)
+        start: 898   # row 900 − 2  (testing different cross-section above mid)
+        stop:  903   # row 900 + 3  (5 rows total)
     darks: null
     flats: null
     continuous_scan_subset: null
