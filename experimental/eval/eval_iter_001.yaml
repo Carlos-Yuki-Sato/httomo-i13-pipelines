@@ -1,0 +1,100 @@
+# HTTomo pipeline — I13-2 | ITERATIVE EVALUATION
+# Iteration : 001
+# Algorithm : FBP3d_tomobar — baseline, default parameters
+# Changes   : (baseline — no changes from defaults)
+# Output    : /dls/i13/data/2026/cm44160-2/processing/httomo/eval/iter_001/
+#
+# Run with httomo/latest on a local workstation:
+#   ssh i13-ws001 "module load httomo/latest && python -m httomo run '<nxs>' '<this_file>' '<output>'"
+#
+# Before running:
+#   1. Set detector_y start/stop to 5 rows at mid-detector (total_rows/2 ± 2)
+#   2. Set cor_initialisation_value to your known approximate COR
+
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto
+    image_key_path: auto
+    rotation_angles: auto
+    preview:
+      detector_x: {start: null, stop: null}
+      detector_y:
+        start: 1278  # CHANGE_HERE: mid-detector − 2  (total_rows / 2 − 2)
+        stop:  1283  # CHANGE_HERE: mid-detector + 3  (5 rows total)
+    darks: null
+    flats: null
+    continuous_scan_subset: null
+
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3
+    dif: 1000
+
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0
+    darks_multiplier: 1.0
+    upper_bound: null
+    lower_bound: null
+
+- method: find_center_vo
+  module_path: httomolibgpu.recon.rotation
+  parameters:
+    ind: mid
+    average_radius: 1
+    cor_initialisation_value: 1280  # CHANGE_HERE: approximate COR in pixels
+    smin: -300
+    smax: 300
+    srad: 6.0
+    step: 0.5
+    ratio: 0.5
+    drop: 20
+  id: centering
+  side_outputs:
+    cor: centre_of_rotation
+
+- method: remove_stripe_based_sorting
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    size: 11
+    dim: 1
+
+- method: minus_log
+  module_path: httomolibgpu.prep.normalize
+  parameters: {}
+
+- method: FBP3d_tomobar
+  module_path: httomolibgpu.recon.algorithm
+  parameters:
+    center: ${{centering.side_outputs.centre_of_rotation}}
+    detector_pad: false
+    filter_freq_cutoff: 0.35
+    recon_size: null
+    recon_mask_radius: 0.95
+  save_result: false
+
+- method: calculate_stats
+  module_path: httomo.methods
+  parameters: {}
+  id: statistics
+  side_outputs:
+    glob_stats: glob_stats
+
+- method: rescale_to_int
+  module_path: httomolib.misc.rescale
+  parameters:
+    perc_range_min: 1.0
+    perc_range_max: 99.0
+    bits: 8
+    glob_stats: ${{statistics.side_outputs.glob_stats}}
+
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: images
+    axis: auto
+    file_format: png
+    asynchronous: true
