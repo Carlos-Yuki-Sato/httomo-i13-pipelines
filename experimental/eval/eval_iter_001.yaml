@@ -7,9 +7,8 @@
 # Run with httomo/latest on a local workstation:
 #   ssh i13-ws001 "module load httomo/latest && python -m httomo run '<nxs>' '<this_file>' '<output>'"
 #
-# Before running:
-#   1. Set detector_y start/stop to 5 rows at mid-detector (total_rows/2 ± 2)
-#   2. Set cor_initialisation_value to your known approximate COR
+# Dataset   : /dls/i13/data/2026/mg41329-1/raw/194481.nxs
+#             2081 proj × 2160 rows × 2560 cols  →  mid-row = 1080
 
 - method: standard_tomo
   module_path: httomo.data.hdf.loaders
@@ -20,8 +19,8 @@
     preview:
       detector_x: {start: null, stop: null}
       detector_y:
-        start: 1278  # CHANGE_HERE: mid-detector − 2  (total_rows / 2 − 2)
-        stop:  1283  # CHANGE_HERE: mid-detector + 3  (5 rows total)
+        start: 1078  # mid-detector − 2  (2160 / 2 − 2)
+        stop:  1083  # mid-detector + 3  (5 rows total)
     darks: null
     flats: null
     continuous_scan_subset: null
@@ -44,8 +43,8 @@
   module_path: httomolibgpu.recon.rotation
   parameters:
     ind: mid
-    average_radius: 1
-    cor_initialisation_value: 1280  # CHANGE_HERE: approximate COR in pixels
+    average_radius: 0  # 0 = single mid-row only; safe for thin-slice eval (no boundary risk)
+    cor_initialisation_value: 1280  # ≈ detector_width / 2  (2560 / 2)
     smin: -300
     smax: 300
     srad: 6.0
