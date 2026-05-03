@@ -72,7 +72,7 @@
     pad_y: 20
     pad_x: 20
     pad_method: edge
-    uvalue: !SweepValues [5, 10, 15, 20, 30, 50]
+    uvalue: !Sweep [5, 10, 15, 20, 30, 50]
     nvalue: 4
     vvalue: 2
 
