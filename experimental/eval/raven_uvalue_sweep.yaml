@@ -1,14 +1,14 @@
 # HTTomo pipeline — I13-2 | EVALUATION SWEEP
-# Sweep     : raven_filter  uvalue  [2, 5, 10, 20, 50, 100, 200]  (7 reconstructions)
-# Purpose   : extended range — first sweep [5–50] showed higher uvalue creates a
-#             dark central spot (low-frequency ring content back-projects at COR).
-#             Testing wider range to find where spot disappears vs rings return.
+# Sweep     : raven_filter  uvalue  [100, 200, 300, 500, 750, 1000]  (6 reconstructions)
+# Purpose   : high-end range — low uvalues erase real edges in the centre.
+#             uval=200 best so far; testing up to 1000 to find where ring
+#             artefacts start to dominate over genuine sample structure.
 # Output    : /dls/i13/data/2026/cm44160-2/processing/httomo/eval/raven_uvalue_sweep/
 #
 # uvalue controls the FFT cut-off frequency (lower = more aggressive):
-#   Very low (2–5)   — very aggressive; central spot likely gone, edge blurring risk
-#   Low      (10–20) — moderate suppression
-#   High     (50+)   — gentle; dark central spot observed at uvalue=50 in v1
+#   Low   (2–50)    — too aggressive; erases real edges
+#   Mid   (100–200) — previous best range
+#   High  (300+)    — very gentle; ring artefacts may re-appear
 #
 # Run with httomo/latest on a local workstation:
 #   ssh i13-ws010 "module load httomo/latest && python -m httomo run '<nxs>' '<this_file>' '<output>'"
@@ -73,7 +73,7 @@
     pad_y: 20
     pad_x: 20
     pad_method: edge
-    uvalue: !Sweep [2, 5, 10, 20, 50, 100, 200]
+    uvalue: !Sweep [100, 200, 300, 500, 750, 1000]
     nvalue: 4
     vvalue: 2
 
