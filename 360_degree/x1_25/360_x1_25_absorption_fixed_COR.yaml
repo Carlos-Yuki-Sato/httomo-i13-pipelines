@@ -76,7 +76,7 @@
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
     gpu_id: 0                                 # GPU device index (0 = first available GPU)
-  save_result: true                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
+  save_result: false                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
 
 # --- Calculate global statistics on the reconstructed volume. ---
 - method: calculate_stats
@@ -90,8 +90,8 @@
 - method: rescale_to_int
   module_path: httomolib.misc.rescale
   parameters:
-    perc_range_min: 2.0                       # lower percentile clip — values below this percentile map to 0
-    perc_range_max: 98.0                      # upper percentile clip — values above this percentile map to integer max
+    perc_range_min: 1.0                       # lower percentile clip — values below this percentile map to 0
+    perc_range_max: 99.0                      # upper percentile clip — values above this percentile map to integer max
     bits: 16                                  # output integer bit depth: 8 (uint8), 16 (uint16), or 32 (uint32)
     glob_stats: ${{statistics.side_outputs.glob_stats}}
 

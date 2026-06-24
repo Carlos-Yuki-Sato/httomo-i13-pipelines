@@ -54,7 +54,7 @@
   parameters:
     ind: mid                                  # sinogram row index for COR search; null or 'mid' = mid-detector row
     win_width: 50                             # search window width in pixels used for overlap detection
-    side: None
+    side: null
     denoise: true                             # apply smoothing before overlap search (improves robustness on noisy data)
     norm: false                               # normalise projections before comparing 0° and 180° sides
     use_overlap: false                        # use overlap value instead of phase correlation to derive COR
@@ -104,4 +104,4 @@
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
     gpu_id: 0                                 # GPU device index (0 = first available GPU)
-  save_result: true                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
+  save_result: false                           # also saves a float32 HDF5 of this output to the run directory; set false to disable

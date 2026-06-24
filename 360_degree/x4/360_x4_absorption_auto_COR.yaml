@@ -48,7 +48,7 @@
   parameters:
     ind: mid                                  # sinogram row index for COR search; null or 'mid' = mid-detector row
     win_width: 50                             # search window width in pixels used for overlap detection
-    side: None
+    side: null
     denoise: true                             # apply smoothing before overlap search (improves robustness on noisy data)
     norm: false                               # normalise projections before comparing 0° and 180° sides
     use_overlap: false                        # use overlap value instead of phase correlation to derive COR
@@ -84,7 +84,7 @@
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
     gpu_id: 0                                 # GPU device index (0 = first available GPU)
-  save_result: true                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
+  save_result: false                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
 
 - method: calculate_stats
   module_path: httomo.methods
@@ -96,8 +96,8 @@
 - method: rescale_to_int
   module_path: httomolib.misc.rescale
   parameters:
-    perc_range_min: 5.0                       # lower percentile clip — values below this percentile map to 0
-    perc_range_max: 95.0                      # upper percentile clip — values above this percentile map to integer max
+    perc_range_min: 1.0                       # lower percentile clip — values below this percentile map to 0
+    perc_range_max: 99.0                      # upper percentile clip — values above this percentile map to integer max
     bits: 16                                  # output integer bit depth: 8 (uint8), 16 (uint16), or 32 (uint32)
     glob_stats: ${{statistics.side_outputs.glob_stats}}
 
