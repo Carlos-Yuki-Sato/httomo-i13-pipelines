@@ -42,8 +42,6 @@
   module_path: httomolibgpu.prep.alignment
   parameters:
     metadata_path: /dls/i13/data/YEAR/VISIT/processing/distortion_corrections/results_4thOrder/Pos2_2x/coefficients_bwfw.txt  # CHANGE_HERE: update path for current visit
-    shift_xy: [0, 0]                          # distortion centre offset [x, y] in pixels from image corner
-    step_xy: [1, 1]                           # sampling step in x and y directions (must be ≤ 1)
     order: 3                                  # spline interpolation order: 0=nearest, 1=linear, 3=cubic (default), max 5
     mode: constant                            # boundary padding: 'constant' (zeros), 'nearest', 'mirror', 'reflect', or 'wrap'
 
@@ -93,7 +91,6 @@
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
-    gpu_id: 0                                 # GPU device index (0 = first available GPU)
   save_result: false                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
 
 # --- Calculate global statistics on the reconstructed volume. ---
@@ -120,6 +117,4 @@
     subfolder_name: images                    # output subdirectory name inside the HTTomo run folder
     axis: auto                                # slicing axis: 0=projections, 1=sinograms, 2=recon slices, 'auto'=HTTomo decides
     file_format: tif                          # image format: 'tif' (lossless), 'png' (lossless), or 'jpeg' (lossy)
-    jpeg_quality: 95                          # JPEG compression quality 1–100 (only applies when file_format='jpeg')
-    offset: 0                                 # starting index for output file names (useful for parallel chunked runs)
     asynchronous: true                        # write images in background while GPU processes the next chunk
