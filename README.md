@@ -42,9 +42,10 @@ Covers all standard experimental configurations used at I13-2.
 │   ├── eval/
 │   └── parameter_sweeps/ + recon_comparison/
 │
-└── Proposals/                — per-visit copies with visit-specific distortion paths
-    ├── mg42769-1/
-    └── mg43632-1/
+└── Proposals/                — per-visit, self-contained copies (load whole folder in HTTomo)
+    ├── mg42769-1/            180°, 360°, radiography (all objectives) + TXM/
+    ├── mg43632-1/            "
+    └── sw46042-1/            "
 ```
 
 ---
@@ -195,9 +196,10 @@ Full path template:
 
 ## Proposals Folder
 
-The `Proposals/` directory contains per-visit copies of the complete standard pipeline set
-(180°, 360°, radiography for all objectives) with the `metadata_path` already set to the
-correct visit directory. To add a new proposal:
+The `Proposals/` directory contains per-visit copies of the complete pipeline set
+(180°, 360°, radiography for all objectives, plus TXM) with the `metadata_path` already set to the
+correct visit directory. Each folder is self-contained — load the whole proposal folder in HTTomo
+and all pipelines for that visit are available. To add a new proposal:
 
 1. Copy a recent `Proposals/<visit-id>/` folder.
 2. Replace the visit path in all `distortion_correction metadata_path` fields.
