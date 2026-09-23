@@ -1,0 +1,51 @@
+# HTTomo pipeline — I13-2
+# Scan: Radiography  |  Objective: TXM
+# Pipeline: T1 — save normalised projections as images (no reconstruction)
+
+# --- Standard tomography loader for NeXus files. ---
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: null
+        stop: null
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+# --- Removing unresponsive/dead pixels in the data, aka zingers. ---
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+# --- Flat-field and dark-field projection correction. ---
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
+    lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
+
+# --- Negative log to convert raw intensity to line integrals of attenuation. ---
+- method: minus_log
+  module_path: httomolibgpu.prep.normalize
+  parameters: {}
+
+# --- Saving projections as images. axis: 0 = projections (NOT sinograms). ---
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: images                    # output subdirectory name inside the HTTomo run folder
+    axis: 0                                   # slicing axis: 0=projections, 1=sinograms, 2=recon slices, 'auto'=HTTomo decides
+    file_format: tif                          # image format: 'tif' (lossless), 'png' (lossless), or 'jpeg' (lossy)
+    asynchronous: true                        # write images in background while GPU processes the next chunk
