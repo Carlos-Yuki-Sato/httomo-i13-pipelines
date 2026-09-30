@@ -1,9 +1,9 @@
 # HTTomo pipeline — I13-2
-# Scan: 360°  |  Objective: 4x  |  Phase: absorption  |  COR: sweep (no distortion correction)
-# Pipeline: T8b — COR sweep after 360→180 conversion, without optical distortion correction (faster)
+# Scan: 180°  |  Objective: any  |  Phase: absorption  |  COR: sweep (no distortion correction)
+# Pipeline: T3b — thin-slice COR sweep without optical distortion correction (faster, objective-independent)
 # Usage: use when you do not need distortion coefficients or want a quick COR estimate
-# For the full version with distortion correction see 360_x4_absorption_COR_sweep.yaml
-# Before running: set overlap, side from auto_COR run; adjust sweep range around ~(2×detector_width − overlap)/2
+# For the full version with distortion correction see the per-objective *_COR_sweep.yaml in the x* folders
+# Before running: adjust detector_y to a central row and sweep range around your estimated COR (~half detector width)
 
 # --- Standard tomography loader — thin slice for fast sweep. ---
 - method: standard_tomo
@@ -17,8 +17,8 @@
         start: null
         stop: null
       detector_y:
-        start: 1070                           # CHANGE_HERE
-        stop: 1080                            # CHANGE_HERE
+        start: 1075                           # CHANGE_HERE: set to a row near the centre of your sample
+        stop: 1085   # ~10 rows is sufficient
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
@@ -39,13 +39,6 @@
     upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
     lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
 
-# --- Convert 360° scan to 180° using a manually set overlap. ---
-- method: sino_360_to_180
-  module_path: httomolibgpu.misc.morph
-  parameters:
-    overlap: 965                              # CHANGE_HERE: set to overlap value from find_center_360 output
-    side: left                                # CHANGE_HERE: 'left' or 'right'
-
 # --- Method to remove stripe artefacts. ---
 - method: remove_stripe_based_sorting
   module_path: httomolibgpu.prep.stripe
@@ -63,9 +56,9 @@
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: !SweepRange
-      start: 2000                             # CHANGE_HERE: COR after 360→180 ≈ (2*detector_width - overlap) / 2
-      stop: 2600                              # CHANGE_HERE
-      step: 1                                 # CHANGE_HERE
+      start: 1180                             # CHANGE_HERE: set range around your estimated COR (~half detector width)
+      stop: 1380                              # CHANGE_HERE
+      step: 0.5                               # CHANGE_HERE: 0.5 for fine sweep, 2.0 for coarse initial search
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
