@@ -48,8 +48,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 500  # CHANGE_HERE: set to overlap found from radiography_360_auto_overlap_x1_25.yaml
-    side: right   # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_x1_25.yaml
+    overlap: 500                              # CHANGE_HERE: set to overlap found from radiography_360_auto_overlap_x1_25.yaml
+    side: right                               # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_x1_25.yaml
 
 # --- Method to remove stripe artefacts. ---
 - method: remove_stripe_based_sorting

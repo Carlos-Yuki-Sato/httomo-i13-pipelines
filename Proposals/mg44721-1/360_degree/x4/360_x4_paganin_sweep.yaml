@@ -14,8 +14,8 @@
         start: null
         stop: null
       detector_y:
-        start: 1075  # CHANGE_HERE
-        stop: 1085   # CHANGE_HERE
+        start: 1075                           # CHANGE_HERE
+        stop: 1085                            # CHANGE_HERE
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
@@ -74,8 +74,8 @@
   module_path: httomolibgpu.prep.phase
   parameters:
     pixel_size: 0.8125  # µm
-    distance: 0.085     # CHANGE_HERE: (detector_position_mm - 910) / 1000
-    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    distance: 0.085                           # CHANGE_HERE: (detector_position_mm - 910) / 1000
+    energy: 27.0                              # CHANGE_HERE: beam energy in keV
     calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
     pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
     ratio_delta_beta: !SweepRange

@@ -14,8 +14,8 @@
         start: null
         stop: null
       detector_y:
-        start: 1000  # CHANGE_HERE
-        stop: 1200   # CHANGE_HERE
+        start: 1000                           # CHANGE_HERE
+        stop: 1200                            # CHANGE_HERE
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
@@ -45,8 +45,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 500  # CHANGE_HERE: set to overlap value from find_center_360 output
-    side: right   # CHANGE_HERE: 'left' or 'right'
+    overlap: 500                              # CHANGE_HERE: set to overlap value from find_center_360 output
+    side: right                               # CHANGE_HERE: 'left' or 'right'
 
 - method: remove_stripe_based_sorting
   module_path: httomolibgpu.prep.stripe
@@ -63,9 +63,9 @@
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: !SweepRange
-      start: 2100  # CHANGE_HERE: COR after 360→180 ≈ (2*detector_width - overlap) / 2
-      stop: 2500   # CHANGE_HERE
-      step: 2      # CHANGE_HERE
+      start: 2100                             # CHANGE_HERE: COR after 360→180 ≈ (2*detector_width - overlap) / 2
+      stop: 2500                              # CHANGE_HERE
+      step: 2                                 # CHANGE_HERE
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

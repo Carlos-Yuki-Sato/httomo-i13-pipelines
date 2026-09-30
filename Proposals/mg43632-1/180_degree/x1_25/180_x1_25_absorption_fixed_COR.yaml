@@ -61,7 +61,7 @@
 - method: FBP3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
-    center: 1280  # CHANGE_HERE: set to COR value found from 180_x125_absorption_COR_sweep.yaml
+    center: 1280                              # CHANGE_HERE: set to COR value found from 180_x125_absorption_COR_sweep.yaml
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

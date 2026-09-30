@@ -15,7 +15,7 @@
         start: null
         stop: null
       detector_y:
-        start: 589  # CHANGE_HERE: set to a row near the centre of your sample
+        start: 589                            # CHANGE_HERE: set to a row near the centre of your sample
         stop: 599   # ~10 rows is sufficient
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
@@ -42,10 +42,10 @@
   module_path: httomolibgpu.misc.morph
   parameters:
     overlap: !SweepRange
-      start: 450  # CHANGE_HERE: set range around expected overlap
-      stop: 600   # CHANGE_HERE
-      step: 5     # CHANGE_HERE: 5 for coarse search, 1 for fine
-    side: right   # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_TXM.yaml
+      start: 450                              # CHANGE_HERE: set range around expected overlap
+      stop: 600                               # CHANGE_HERE
+      step: 5                                 # CHANGE_HERE: 5 for coarse search, 1 for fine
+    side: right                               # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_TXM.yaml
 
 # --- Negative log to convert raw intensity to line integrals of attenuation. ---
 - method: minus_log

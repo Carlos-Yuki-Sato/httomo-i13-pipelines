@@ -19,7 +19,7 @@
         start: null
         stop: null
       detector_y:
-        start: 1000  # CHANGE_HERE: set to a representative region of your sample
+        start: 1000                           # CHANGE_HERE: set to a representative region of your sample
         stop: 1200   # 200 rows gives a useful preview after 360→180 conversion
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
@@ -53,8 +53,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 460  # CHANGE_HERE: set to overlap value from find_center_360 output
-    side: right   # CHANGE_HERE: 'left' or 'right' — from find_center_360 output
+    overlap: 460                              # CHANGE_HERE: set to overlap value from find_center_360 output
+    side: right                               # CHANGE_HERE: 'left' or 'right' — from find_center_360 output
 
 # --- Method to remove stripe artefacts. ---
 - method: remove_stripe_based_sorting
@@ -73,9 +73,9 @@
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: !SweepRange
-      start: 2100  # CHANGE_HERE: COR after 360→180 is ~(2*detector_width - overlap) / 2
-      stop: 2500   # CHANGE_HERE
-      step: 2      # CHANGE_HERE: 1–2 for fine sweep
+      start: 2100                             # CHANGE_HERE: COR after 360→180 is ~(2*detector_width - overlap) / 2
+      stop: 2500                              # CHANGE_HERE
+      step: 2                                 # CHANGE_HERE: 1–2 for fine sweep
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

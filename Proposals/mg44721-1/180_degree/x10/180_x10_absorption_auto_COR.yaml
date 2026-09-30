@@ -52,7 +52,7 @@
   parameters:
     ind: mid                                  # sinogram row index for COR search; null or 'mid' = mid-detector row
     average_radius: 3                         # number of neighbouring rows to average for better SNR (0 = single row; try 3–5 for noisy data)
-    cor_initialisation_value: 1280  # CHANGE_HERE: provide approximate COR if known; helps convergence
+    cor_initialisation_value: 1280            # CHANGE_HERE: provide approximate COR if known; helps convergence
     smin: -300                                # coarse search: lower pixel offset from the initial COR estimate
     smax: 300                                 # coarse search: upper pixel offset from the initial COR estimate
     srad: 6.0                                 # fine search radius in pixels around the coarse result

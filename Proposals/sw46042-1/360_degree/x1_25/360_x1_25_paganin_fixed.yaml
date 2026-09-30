@@ -44,8 +44,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 500  # CHANGE_HERE: set to overlap found from find_center_360 or 360_x125_absorption_auto_COR.yaml
-    side: right   # CHANGE_HERE: 'left' or 'right'
+    overlap: 500                              # CHANGE_HERE: set to overlap found from find_center_360 or 360_x125_absorption_auto_COR.yaml
+    side: right                               # CHANGE_HERE: 'left' or 'right'
 
 - method: remove_stripe_based_sorting
   module_path: httomolibgpu.prep.stripe
@@ -58,16 +58,16 @@
   module_path: httomolibgpu.prep.phase
   parameters:
     pixel_size: 2.6     # µm
-    distance: 0.100     # CHANGE_HERE: (detector_position_mm - 910) / 1000
-    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    distance: 0.100                           # CHANGE_HERE: (detector_position_mm - 910) / 1000
+    energy: 27.0                              # CHANGE_HERE: beam energy in keV
     calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
     pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
-    ratio_delta_beta: 100  # CHANGE_HERE: set to value found from paganin sweep
+    ratio_delta_beta: 100                     # CHANGE_HERE: set to value found from paganin sweep
 
 - method: FBP3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
-    center: 2310  # CHANGE_HERE: COR after 360→180 ≈ (2×detector_width − overlap) / 2
+    center: 2310                              # CHANGE_HERE: COR after 360→180 ≈ (2×detector_width − overlap) / 2
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

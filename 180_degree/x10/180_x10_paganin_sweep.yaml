@@ -16,7 +16,7 @@
         start: null
         stop: null
       detector_y:
-        start: 1000  # CHANGE_HERE: set to a row through the middle of your sample
+        start: 1000                           # CHANGE_HERE: set to a row through the middle of your sample
         stop: 1010   # ~10 rows is sufficient for a Paganin sweep
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
@@ -52,20 +52,20 @@
   module_path: httomolibgpu.prep.phase
   parameters:
     pixel_size: 0.325   # µm — effective pixel size at sample (3.25 µm detector / 10x)
-    distance: 0.020     # CHANGE_HERE: sample-to-detector distance in metres = (detector_position_mm - 910) / 1000
-    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    distance: 0.020                           # CHANGE_HERE: sample-to-detector distance in metres = (detector_position_mm - 910) / 1000
+    energy: 27.0                              # CHANGE_HERE: beam energy in keV
     calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
     pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
     ratio_delta_beta: !SweepRange
       start: 0
       stop: 10
-      step: 0.25  # CHANGE_HERE: at 10x the optimal value is typically much lower than at 4x
+      step: 0.25                              # CHANGE_HERE: at 10x the optimal value is typically much lower than at 4x
 
 # --- Reconstruction method — uses a fixed COR since auto-finding may struggle on thin slices. ---
 - method: FBP3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
-    center: 1280  # CHANGE_HERE: set to COR found from 180_x10_absorption_COR_sweep.yaml
+    center: 1280                              # CHANGE_HERE: set to COR found from 180_x10_absorption_COR_sweep.yaml
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

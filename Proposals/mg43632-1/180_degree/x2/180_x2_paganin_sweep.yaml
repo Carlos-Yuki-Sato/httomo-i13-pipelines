@@ -16,7 +16,7 @@
         start: null
         stop: null
       detector_y:
-        start: 1075  # CHANGE_HERE: set to a row through the middle of your sample
+        start: 1075                           # CHANGE_HERE: set to a row through the middle of your sample
         stop: 1085   # ~10 rows is sufficient for a Paganin sweep
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
@@ -76,14 +76,14 @@
   module_path: httomolibgpu.prep.phase
   parameters:
     pixel_size: 1.625  # µm — effective pixel size at sample (3.25 µm detector / 2x)
-    distance: 0.100    # CHANGE_HERE: sample-to-detector distance in metres = (detector_position_mm - 910) / 1000
-    energy: 27.0       # CHANGE_HERE: beam energy in keV
+    distance: 0.100                           # CHANGE_HERE: sample-to-detector distance in metres = (detector_position_mm - 910) / 1000
+    energy: 27.0                              # CHANGE_HERE: beam energy in keV
     calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
     pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
     ratio_delta_beta: !SweepRange
       start: 1
       stop: 1000
-      step: 10  # CHANGE_HERE: adjust range to suit your sample material
+      step: 10                                # CHANGE_HERE: adjust range to suit your sample material
 
 # --- Reconstruction method. ---
 - method: FBP3d_tomobar

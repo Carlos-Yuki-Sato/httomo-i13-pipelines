@@ -16,7 +16,7 @@
         start: null
         stop: null
       detector_y:
-        start: 589  # CHANGE_HERE: set to a row near the centre of your sample
+        start: 589                            # CHANGE_HERE: set to a row near the centre of your sample
         stop: 599   # ~10 rows is sufficient
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
@@ -58,9 +58,9 @@
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: !SweepRange
-      start: 800  # CHANGE_HERE: set range around ~half detector width for your TXM configuration
-      stop: 1000  # CHANGE_HERE
-      step: 0.5   # CHANGE_HERE: 0.5 for fine sweep, 2.0 for coarse initial search
+      start: 800                              # CHANGE_HERE: set range around ~half detector width for your TXM configuration
+      stop: 1000                              # CHANGE_HERE
+      step: 0.5                               # CHANGE_HERE: 0.5 for fine sweep, 2.0 for coarse initial search
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

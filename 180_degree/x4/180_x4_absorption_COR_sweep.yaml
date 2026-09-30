@@ -16,8 +16,8 @@
         start: null
         stop: null
       detector_y:
-        start: 800   # CHANGE_HERE: set to a row near the centre of your sample
-        stop: 1300   # CHANGE_HERE: wider window gives more context; narrower is faster
+        start: 800                            # CHANGE_HERE: set to a row near the centre of your sample
+        stop: 1300                            # CHANGE_HERE: wider window gives more context; narrower is faster
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
@@ -63,9 +63,9 @@
   module_path: httomolibgpu.recon.algorithm
   parameters:
     center: !SweepRange
-      start: 1200  # CHANGE_HERE: set range around your estimated COR (~half detector width)
-      stop: 1400   # CHANGE_HERE
-      step: 0.5    # CHANGE_HERE: 0.5 for fine sweep, 2.0 for coarse initial search
+      start: 1200                             # CHANGE_HERE: set range around your estimated COR (~half detector width)
+      stop: 1400                              # CHANGE_HERE
+      step: 0.5                               # CHANGE_HERE: 0.5 for fine sweep, 2.0 for coarse initial search
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)

@@ -74,11 +74,11 @@
   module_path: httomolibgpu.prep.phase
   parameters:
     pixel_size: 0.325   # µm
-    distance: 0.020     # CHANGE_HERE: (detector_position_mm - 910) / 1000
-    energy: 27.0        # CHANGE_HERE: beam energy in keV
+    distance: 0.020                           # CHANGE_HERE: (detector_position_mm - 910) / 1000
+    energy: 27.0                              # CHANGE_HERE: beam energy in keV
     calculate_padding_value_method: next_power_of_2 # FFT padding strategy: 'next_power_of_2', 'next_fast_length', or 'use_pad_x_y'
     pad_x_y: null                             # explicit FFT padding [x, y] pixels; only used when method is 'use_pad_x_y'
-    ratio_delta_beta: 2  # CHANGE_HERE: set to value found from 360_x10_paganin_sweep.yaml
+    ratio_delta_beta: 2                       # CHANGE_HERE: set to value found from 360_x10_paganin_sweep.yaml
 
 - method: FBP3d_tomobar
   module_path: httomolibgpu.recon.algorithm

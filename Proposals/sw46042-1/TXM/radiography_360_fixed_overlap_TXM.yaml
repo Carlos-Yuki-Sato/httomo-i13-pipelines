@@ -40,8 +40,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 500  # CHANGE_HERE: set to overlap found from radiography_360_auto_overlap_TXM.yaml
-    side: right   # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_TXM.yaml
+    overlap: 500                              # CHANGE_HERE: set to overlap found from radiography_360_auto_overlap_TXM.yaml
+    side: right                               # CHANGE_HERE: 'left' or 'right' from radiography_360_auto_overlap_TXM.yaml
 
 # --- Negative log to convert raw intensity to line integrals of attenuation. ---
 - method: minus_log

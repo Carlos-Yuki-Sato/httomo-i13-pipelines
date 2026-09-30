@@ -44,8 +44,8 @@
 - method: sino_360_to_180
   module_path: httomolibgpu.misc.morph
   parameters:
-    overlap: 500  # CHANGE_HERE: set to overlap found from find_center_360 or COR sweep
-    side: right   # CHANGE_HERE: 'left' or 'right'
+    overlap: 500                              # CHANGE_HERE: set to overlap found from find_center_360 or COR sweep
+    side: right                               # CHANGE_HERE: 'left' or 'right'
 
 - method: remove_stripe_based_sorting
   module_path: httomolibgpu.prep.stripe
@@ -60,7 +60,7 @@
 - method: FBP3d_tomobar
   module_path: httomolibgpu.recon.algorithm
   parameters:
-    center: 2280  # CHANGE_HERE: set to COR found from 360_x10_absorption_COR_sweep.yaml
+    center: 2280                              # CHANGE_HERE: set to COR found from 360_x10_absorption_COR_sweep.yaml
     detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
     filter_freq_cutoff: 0.35                  # ramp filter cutoff frequency (0.0–1.0; lower = smoother/less noise, higher = sharper)
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
