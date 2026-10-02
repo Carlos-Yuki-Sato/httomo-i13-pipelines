@@ -41,7 +41,7 @@
 - method: distortion_correction_proj_discorpy
   module_path: httomolibgpu.prep.alignment
   parameters:
-    metadata_path: /dls/i13/data/2026/mg41113-1/processing/distortion_corrections/results_4thOrder/Pos4_4x/coefficients_bwfw.txt  # CHANGE_HERE: update path for current visit
+    metadata_path: /dls/i13/data/2026/mg45164-1/processing/thayalan/mg4113-1/processing/distortion_corrections/results_4thOrder/Pos4_4x/coefficients_bwfw.txt  # CHANGE_HERE: update path for current visit
     order: 3                                  # spline interpolation order: 0=nearest, 1=linear, 3=cubic (default), max 5
     mode: constant                            # boundary padding: 'constant' (zeros), 'nearest', 'mirror', 'reflect', or 'wrap'
 
