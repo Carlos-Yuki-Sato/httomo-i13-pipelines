@@ -1,0 +1,99 @@
+# HTTomo pipeline — I13-2  |  mg44726-1 experimental
+# Algorithm : FISTA3d_tomobar  (Fast Iterative Shrinkage-Thresholding, GPU 3D)
+# Mode      : regularisation_parameter (lambda) sweep — find optimal TV regularisation strength
+# Sample    : 199686  |  fixed COR 803 (auto-COR does not work for this sample)
+# After running: pick the lambda that preserves structure without over-smoothing;
+#                update regularisation_parameter in TXM_FISTA3d.yaml with the winning value
+
+# --- Standard tomography loader — thin slice for fast comparison. ---
+- method: standard_tomo
+  module_path: httomo.data.hdf.loaders
+  parameters:
+    data_path: auto                           # path to projection data in the NeXus file; 'auto' reads from file metadata
+    image_key_path: auto                      # path to scan-type key (0=projection, 1=flat, 2=dark); 'auto' = from metadata
+    rotation_angles: auto                     # path to rotation angle array; 'auto' = from NeXus metadata
+    preview:
+      detector_x:
+        start: null
+        stop: null
+      detector_y:
+        start: 584                            # 10 rows near detector centre for sample 199686
+        stop: 594
+    darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
+    flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
+    continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
+
+# --- Removing unresponsive/dead pixels in the data, aka zingers. ---
+- method: remove_outlier
+  module_path: httomolibgpu.misc.corr
+  parameters:
+    kernel_size: 3                            # filter kernel diameter for outlier detection (must be odd integer)
+    dif: 1000                                 # minimum intensity difference between outlier and neighbourhood median
+
+# --- Flat-field and dark-field projection correction. ---
+- method: dark_flat_field_correction
+  module_path: httomolibgpu.prep.normalize
+  parameters:
+    flats_multiplier: 1.0                     # scale factor applied to flat-field intensities before correction
+    darks_multiplier: 1.0                     # scale factor applied to dark-field intensities before correction
+    upper_bound: null                         # clip normalised values above this threshold (null = no upper clamp)
+    lower_bound: null                         # clip normalised values below this threshold (null = no lower clamp)
+
+# --- Method to remove stripe artefacts. ---
+- method: remove_all_stripe
+  module_path: httomolibgpu.prep.stripe
+  parameters:
+    snr: 3.0                                  # signal-to-noise ratio threshold for stripe detection
+    la_size: 61                               # window size for large-stripe detection
+    sm_size: 21                               # window size for small-stripe detection
+    dim: 1                                    # filter orientation: 1 = vertical stripes (typical), 2 = diagonal
+    normalize: true                           # normalise the sinogram before stripe removal
+
+# --- Negative log to convert raw intensity to line integrals of attenuation. ---
+- method: minus_log
+  module_path: httomolibgpu.prep.normalize
+  parameters: {}
+
+# --- FISTA reconstruction sweeping lambda. Inspect outputs for best structure preservation. ---
+- method: FISTA3d_tomobar
+  module_path: httomolibgpu.recon.algorithm
+  parameters:
+    center: 803                               # fixed COR for sample 199686 (auto-COR does not converge)
+    detector_pad: false                       # horizontal padding to reduce arc artefacts; true = auto, int = explicit pixels
+    recon_size: null                          # output slice size in pixels (null = detector width)
+    recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice
+    iterations: 20                            # number of outer FISTA iterations
+    subsets_number: 6                         # ordered-subsets acceleration factor
+    data_fidelity: LS                         # data fidelity term: LS (least-squares)
+    regularisation_type: PD_TV               # regulariser: PD_TV = primal-dual total variation
+    regularisation_parameter: !Sweep [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]  # lambda sweep: low=noisy, high=over-smooth
+    regularisation_iterations: 50            # inner TV solver iterations
+    regularisation_half_precision: true       # use float16 for TV solver (faster, sufficient precision)
+    nonnegativity: false                      # enforce non-negative reconstruction values
+  save_result: false                          # also saves a float32 HDF5 of this output to the run directory; set false to disable
+
+# --- Calculate global statistics on the reconstructed volume. ---
+- method: calculate_stats
+  module_path: httomo.methods
+  parameters: {}
+  id: statistics
+  side_outputs:
+    glob_stats: glob_stats
+
+# --- Rescaling the data to 16-bit. ---
+- method: rescale_to_int
+  module_path: httomolib.misc.rescale
+  parameters:
+    perc_range_min: 1.0                       # lower percentile clip — values below this percentile map to 0
+    perc_range_max: 99.0                      # upper percentile clip — values above this percentile map to integer max
+    bits: 16                                  # output integer bit depth: 8 (uint8), 16 (uint16), or 32 (uint32)
+    glob_stats: ${{statistics.side_outputs.glob_stats}}
+
+# --- Saving reconstruction as images. ---
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: TXM_FISTA3d_lambda_sweep  # output subdirectory name inside the HTTomo run folder
+    axis: auto                                # slicing axis: 0=projections, 1=sinograms, 2=recon slices, 'auto'=HTTomo decides
+    file_format: tif                          # image format: 'tif' (lossless), 'png' (lossless), or 'jpeg' (lossy)
+    asynchronous: true                        # write images in background while GPU processes the next chunk
