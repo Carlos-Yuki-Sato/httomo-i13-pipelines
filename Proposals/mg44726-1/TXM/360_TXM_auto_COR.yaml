@@ -65,11 +65,14 @@
     side: ${{centering.side_outputs.side}}
 
 # --- Method to remove stripe artefacts. ---
-- method: remove_stripe_based_sorting
+- method: remove_all_stripe
   module_path: httomolibgpu.prep.stripe
   parameters:
-    size: 11                                  # median filter window size for stripe removal (null = auto-estimate from data)
+    snr: 3.0                                  # signal-to-noise ratio threshold for stripe detection
+    la_size: 61                               # window size for large-stripe detection
+    sm_size: 21                               # window size for small-stripe detection
     dim: 1                                    # filter orientation: 1 = vertical stripes (typical), 2 = diagonal
+    normalize: true                           # normalise the sinogram before stripe removal
 
 # --- Negative log to convert raw intensity to line integrals of attenuation. ---
 - method: minus_log
