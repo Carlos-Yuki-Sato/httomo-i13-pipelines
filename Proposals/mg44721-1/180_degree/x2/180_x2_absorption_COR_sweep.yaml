@@ -1,4 +1,4 @@
-# HTTomo pipeline — I13-2
+﻿# HTTomo pipeline — I13-2
 # Scan: 180°  |  Objective: 2x  |  Phase: absorption  |  COR: sweep
 # Pipeline: T3 — thin-slice COR sweep to find centre of rotation visually
 # Usage: run this first to find the COR, then use 180_x2_absorption_fixed_COR.yaml
@@ -71,3 +71,30 @@
     recon_size: null                          # output slice size in pixels (null = detector width; use to crop or expand)
     recon_mask_radius: 0.95                   # circular crop mask radius as fraction of slice (0.7–1.0; 2.0 = no masking)
   save_result: false                           # also saves a float32 HDF5 of this output to the run directory; set false to disable
+
+
+# --- Calculate global statistics on the reconstructed volume. ---
+- method: calculate_stats
+  module_path: httomo.methods
+  parameters: {}
+  id: statistics
+  side_outputs:
+    glob_stats: glob_stats
+
+# --- Rescaling the data to 16-bit. ---
+- method: rescale_to_int
+  module_path: httomolib.misc.rescale
+  parameters:
+    perc_range_min: 1.0                       # lower percentile clip — values below this percentile map to 0
+    perc_range_max: 99.0                      # upper percentile clip — values above this percentile map to integer max
+    bits: 16                                  # output integer bit depth: 8 (uint8), 16 (uint16), or 32 (uint32)
+    glob_stats: ${{statistics.side_outputs.glob_stats}}
+
+# --- Saving reconstruction as images. ---
+- method: save_to_images
+  module_path: httomolib.misc.images
+  parameters:
+    subfolder_name: images                    # output subdirectory name inside the HTTomo run folder
+    axis: auto                                # slicing axis: 0=projections, 1=sinograms, 2=recon slices, 'auto'=HTTomo decides
+    file_format: tif                          # image format: 'tif' (lossless), 'png' (lossless), or 'jpeg' (lossy)
+    asynchronous: true                        # write images in background while GPU processes the next chunk
