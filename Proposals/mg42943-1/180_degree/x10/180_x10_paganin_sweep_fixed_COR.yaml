@@ -1,4 +1,4 @@
-# HTTomo pipeline — I13-2
+﻿# HTTomo pipeline — I13-2
 # Scan: 180°  |  Objective: 10x  |  Phase: Paganin sweep  |  COR: fixed (hardcoded)
 # Pipeline: T12 — thin-slice Paganin ratio_delta_beta sweep with known COR (no auto-finding)
 # Before running: set center, distance, energy, update distortion_correction metadata_path
@@ -14,8 +14,10 @@
         start: null
         stop: null
       detector_y:
-        start: 1278                           # CHANGE_HERE: ~4 rows near mid-detector; keep ≤7 rows for SweepRange
-        stop: 1282                            # CHANGE_HERE
+        start: mid
+        start_offset: -5
+        stop: mid
+        stop_offset: 5
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections

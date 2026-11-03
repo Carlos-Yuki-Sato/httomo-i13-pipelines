@@ -1,4 +1,4 @@
-# HTTomo pipeline — I13-2
+﻿# HTTomo pipeline — I13-2
 # Scan: 360°  |  Objective: 2x  |  Phase: Paganin sweep  |  COR: auto
 # Pipeline: T10 — thin-slice Paganin ratio_delta_beta sweep after 360→180 conversion
 # Before running: set distance, energy, update distortion_correction metadata_path
@@ -14,8 +14,10 @@
         start: null
         stop: null
       detector_y:
-        start: 1075                           # CHANGE_HERE
-        stop: 1085                            # CHANGE_HERE
+        start: mid
+        start_offset: -5
+        stop: mid
+        stop_offset: 5
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections

@@ -1,4 +1,4 @@
-# HTTomo pipeline — I13-2
+﻿# HTTomo pipeline — I13-2
 # Scan: 180°  |  Objective: 1.25x  |  Phase: Paganin sweep  |  COR: auto
 # Pipeline: T5 — thin-slice Paganin ratio_delta_beta sweep to find optimal phase retrieval
 # Usage: run this after finding COR to determine the best ratio_delta_beta value,
@@ -17,8 +17,10 @@
         start: null
         stop: null
       detector_y:
-        start: 1075                           # CHANGE_HERE: set to a row through the middle of your sample
-        stop: 1085   # ~10 rows is sufficient for a Paganin sweep
+        start: mid
+        start_offset: -5
+        stop: mid
+        stop_offset: 5
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections

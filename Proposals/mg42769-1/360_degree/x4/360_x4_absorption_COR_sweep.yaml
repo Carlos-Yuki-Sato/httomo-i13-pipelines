@@ -14,8 +14,10 @@
         start: null
         stop: null
       detector_y:
-        start: 1070                           # CHANGE_HERE
-        stop: 1080                            # CHANGE_HERE
+        start: mid
+        start_offset: -5
+        stop: mid
+        stop_offset: 5
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections

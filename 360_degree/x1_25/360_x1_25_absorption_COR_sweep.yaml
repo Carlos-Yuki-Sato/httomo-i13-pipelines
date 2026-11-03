@@ -19,8 +19,10 @@
         start: null
         stop: null
       detector_y:
-        start: 1000                           # CHANGE_HERE: set to a representative region of your sample
-        stop: 1200   # 200 rows gives a useful preview after 360→180 conversion
+        start: mid
+        start_offset: -100
+        stop: mid
+        stop_offset: 100
     darks: null                               # external dark-field file; null = use darks embedded in this NeXus file
     flats: null                               # external flat-field file; null = use flats embedded in this NeXus file
     continuous_scan_subset: null              # row subset for continuous (fly) scans; null = use all projections
